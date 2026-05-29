@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="manifest" href="manifest.json" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Arbeitszeit-Rechner</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                darkMode: "class",
+            };
+        </script>
+    </head>
+    <body
+        class="bg-gray-100 dark:bg-gray-900 min-h-screen p-4 transition-colors"
+    >
+        <div
+            class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
+        >
+            <h1 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">
+                Gleitzeit-Rechner
+            </h1>
+
+            <div class="space-y-4">
+                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                    <label
+                        class="block text-xs font-medium text-gray-600 dark:text-gray-300"
+                        >Ziel (Std):</label
+                    >
+                    <input
+                        type="number"
+                        id="targetHours"
+                        value="8"
+                        step="0.1"
+                        class="w-full p-2 border rounded bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    />
+                    <label
+                        class="flex items-center mt-2 text-sm text-gray-700 dark:text-gray-200"
+                    >
+                        <input
+                            type="checkbox"
+                            id="breakIncluded"
+                            class="mr-2"
+                        />
+                        45 Min. Pause abziehen
+                    </label>
+                </div>
+
+                <div id="blocks" class="space-y-2">
+                    <div class="flex gap-2">
+                        <input
+                            type="time"
+                            class="block-start w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                        <input
+                            type="time"
+                            class="block-end w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                    </div>
+                    <div class="flex gap-2">
+                        <input
+                            type="time"
+                            class="block-start w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                        <input
+                            type="time"
+                            class="block-end w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                    </div>
+                    <div class="flex gap-2">
+                        <input
+                            type="time"
+                            class="block-start w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                        <input
+                            type="time"
+                            class="block-end w-1/2 p-2 border rounded border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        />
+                    </div>
+                </div>
+
+                <button
+                    onclick="calculate()"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md active:scale-95 transition"
+                >
+                    Berechnen
+                </button>
+
+                <div
+                    id="result"
+                    class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center hidden"
+                >
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                        Gesamt:
+                        <span id="totalTime" class="font-bold">0</span> Std.
+                    </p>
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                        Rest:
+                        <span
+                            id="remainingTime"
+                            class="font-bold text-blue-700 dark:text-blue-300"
+                            >0</span
+                        >
+                        Std.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function calculate() {
+                const now = new Date();
+                const timeStr =
+                    now.getHours().toString().padStart(2, "0") +
+                    ":" +
+                    now.getMinutes().toString().padStart(2, "0");
+                let totalMinutes = 0;
+
+                document.querySelectorAll("#blocks > div").forEach((block) => {
+                    const startInput = block.querySelector(".block-start");
+                    const endInput = block.querySelector(".block-end");
+                    if (startInput.value && !endInput.value)
+                        endInput.value = timeStr;
+                    if (startInput.value && endInput.value) {
+                        const [sh, sm] = startInput.value
+                            .split(":")
+                            .map(Number);
+                        const [eh, em] = endInput.value.split(":").map(Number);
+                        totalMinutes += eh * 60 + em - (sh * 60 + sm);
+                    }
+                });
+
+                if (document.getElementById("breakIncluded").checked)
+                    totalMinutes -= 45;
+                const target =
+                    parseFloat(document.getElementById("targetHours").value) *
+                    60;
+                document.getElementById("totalTime").innerText = (
+                    totalMinutes / 60
+                ).toFixed(2);
+                document.getElementById("remainingTime").innerText = Math.max(
+                    0,
+                    (target - totalMinutes) / 60
+                ).toFixed(2);
+                document.getElementById("result").classList.remove("hidden");
+            }
+        </script>
+    </body>
+</html>
